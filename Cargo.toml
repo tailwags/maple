@@ -1,15 +1,22 @@
+cargo-features = ["trim-paths", "panic-immediate-abort"]
+
 [workspace]
-members = ["libc", "linker", "startup"]
+members = ["libc", "linker", "startup", "alloc", "core"]
 resolver = "3"
+
+[workspace.dependencies]
+xenia = { version = "0.1.1", default-features = false }
 
 [profile.release]
 lto = true
 codegen-units = 1
 strip = true
+trim-paths = true
+panic = "immediate-abort"
 
 [profile.bloat]
 inherits = "release"
 strip = false
 
 [patch.crates-io]
-# xenia = { path = "../xenia" }
+xenia = { path = "../xenia" }

@@ -3,6 +3,7 @@
 #![feature(core_intrinsics)]
 #![feature(c_variadic)]
 #![feature(thread_local)]
+#![allow(clippy::missing_safety_doc)]
 
 pub mod errno;
 pub mod mem;

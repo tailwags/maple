@@ -1,5 +1,6 @@
 #![no_std]
 #![feature(linkage)]
+#![allow(clippy::missing_safety_doc)]
 
 use core::{
     arch::naked_asm,

@@ -38,8 +38,8 @@ pub static mut stdout: *mut FILE = &raw mut STDOUT_IMPL;
 pub static mut stderr: *mut FILE = &raw mut STDERR_IMPL;
 
 #[unsafe(no_mangle)]
-pub unsafe extern "C" fn printf(format: *const c_char, mut args: ...) -> c_int {
-    unsafe { printf_internal(&*stdout, format, args.as_va_list()) }
+pub unsafe extern "C" fn printf(format: *const c_char, args: ...) -> c_int {
+    unsafe { printf_internal(&*stdout, format, args) }
 }
 
 #[unsafe(no_mangle)]
@@ -48,8 +48,8 @@ pub unsafe extern "C" fn vprintf(format: *const c_char, args: va_list) -> c_int 
 }
 
 #[unsafe(no_mangle)]
-pub unsafe extern "C" fn fprintf(stream: *mut FILE, format: *const c_char, mut args: ...) -> c_int {
-    unsafe { printf_internal(&*stream, format, args.as_va_list()) }
+pub unsafe extern "C" fn fprintf(stream: *mut FILE, format: *const c_char, args: ...) -> c_int {
+    unsafe { printf_internal(&*stream, format, args) }
 }
 
 #[unsafe(no_mangle)]
@@ -77,7 +77,7 @@ unsafe fn printf_internal<Fd: AsFd>(fd: Fd, format: *const c_char, mut args: va_
 
     let str = unsafe { CStr::from_ptr(format) }.to_bytes();
 
-    let mut bytes_iter = str.into_iter().peekable();
+    let mut bytes_iter = str.iter().peekable();
 
     let mut number_buffer = itoa::Buffer::new();
     let mut float_buffer = ryu::Buffer::new();
@@ -91,19 +91,19 @@ unsafe fn printf_internal<Fd: AsFd>(fd: Fd, format: *const c_char, mut args: va_
             {
                 let buf = match *spec {
                     b'd' | b'i' => {
-                        let arg: c_int = unsafe { args.arg() };
+                        let arg: c_int = unsafe { args.next_arg() };
                         number_buffer.format(arg).as_bytes()
                     }
                     b'u' => {
-                        let arg: c_uint = unsafe { args.arg() };
+                        let arg: c_uint = unsafe { args.next_arg() };
                         number_buffer.format(arg).as_bytes()
                     }
                     b's' => {
-                        let arg: *const c_char = unsafe { args.arg() };
+                        let arg: *const c_char = unsafe { args.next_arg() };
                         unsafe { CStr::from_ptr(arg) }.to_bytes()
                     }
                     b'f' => {
-                        let arg: c_double = unsafe { args.arg() };
+                        let arg: c_double = unsafe { args.next_arg() };
                         float_buffer.format(arg).as_bytes()
                     }
                     _ => {
